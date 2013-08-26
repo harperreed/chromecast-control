@@ -6,12 +6,6 @@ from BeautifulSoup import BeautifulSoup
 """
 
 
-Other interesting URLS
-
-http://CHROMECAST_IP:8008/ssdp/device-desc.xml
-http://CHROMECAST_IP:8008/apps/ChromeCast
-http://CHROMECAST_IP:8008/apps/
-
 """
 
 
@@ -19,28 +13,32 @@ class chromecast_control:
 
     port = "8008"
 
-    def __init__(self, ip, app_id):
+    def __init__(self, ip, app_id=None):
         self.ip = ip
         self.app_id = app_id
 
-    def build_url(self):
-        self.app_url = 'http://' + self.ip + ':' + self.port + '/apps/' + self.app_id
+    def build_youtube_url(self):
+        return 'http://' + self.ip + ':' + self.port + '/apps/YouTube'
 
-    def stop(self):
-        self.build_url()
-        requests.delete(self.app_url)
+    def build_app_url(self, app_id=None):
+        if not app_id:
+            app_id = self.app_id
+        if not app_id:
+            raise Exception("App ID required!")
+        return 'http://' + self.ip + ':' + self.port + '/apps/' + app_id
 
-    def start(self):
-        self.build_url()
-        r = requests.post(self.app_url)
+    def stop_app(self, app_id=None):
+        requests.delete(self.build_app_url(app_id))
+
+    def start_app(self, app_id=None):
+        r = requests.post(self.build_app_url(app_id))
         print r.text
 
-    def info(self):
-        self.build_url()
-        r = requests.get(self.app_url)
-        #I hate myself. XML is annoying. 
-        response=BeautifulSoup(r.text)
-        state =  response.service.state.text
+    def info_app(self, app_id=None):
+        r = requests.get(self.build_app_url(app_id))
+        #I hate myself. XML is annoying.
+        response = BeautifulSoup(r.text)
+        state = response.service.state.text
         if state == "running":
             try:
                 activity = response.find("activity-status").description.text
@@ -50,14 +48,27 @@ class chromecast_control:
         else:
             activity = None
 
-        return {'state': state, 'activity':activity}
+        return {'state': state, 'activity': activity}
+
+    #Youtube handling
+
+    def stop_youtube(self):
+        self.build_youtube_url()
+        requests.delete(self.build_youtube_url())
+
+    def start_youtube(self, video_id, t):
+        payload = {'v': video_id, 't': t}
+        requests.post(self.build_youtube_url(), data=payload)
 
 
 if __name__ == "__main__":
 
-    target_ip = 'CHROMECAST_IP' 
-    app_id = 'APPID'
-    a = chromecast_control(target_ip, app_id)
-    a.start() #start the app on the target chromecast
-    print a.info() #get chromecast status
-    a.stop() #stop the app on the chromecast
+    target_ip = '192.168.1.4'
+    app_id = 'app id from googs'
+    a = chromecast_control(target_ip)
+    #a.start_app(app_id)
+    #a.start_app(app_id)
+    #a.start_youtube('awMIbA34MT8', 100)  # start the app on the target chromecast
+    #a.stop_youtube()
+    #print a.info() #get chromecast status
+    #a.stop() #stop the app on the chromecast
