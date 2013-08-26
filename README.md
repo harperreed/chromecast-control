@@ -22,7 +22,31 @@ There are other URLS that show up when you sniff traffic:
 * http://CHROMECAST_IP:8008/apps/ChromeCast
 * http://CHROMECAST_IP:8008/apps/
 
-And i am sure there is more. 
+No idea what this does:
+
+POST `http://CHROMECAST_IP:8008/connection/ChromeCast`
+
+	{
+    	"channel": 0,
+	    "senderId": {
+    	    "appName": "ChromeCast",
+	        "senderId": ""
+    	}
+	}
+	
+
+
+###Youtube	
+####Start:
+
+POST `http://CHROMECAST_IP:8008/apps/YouTube`
+
+	pairingCode:  No idea
+	v:            awMIbA34MT8
+
+####Stop:
+
+DELETE `http://CHROMECAST_IP:8008/apps/YouTube`
 
 
 #Please help
