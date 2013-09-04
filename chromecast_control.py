@@ -1,12 +1,13 @@
-import requests
+#!/usr/bin/python
+
 import logging
-logging.basicConfig(level=logging.INFO)
+import optparse
+import requests
+import sys
+
 from BeautifulSoup import BeautifulSoup
 
-"""
-
-
-"""
+"""Control a chromecast with python"""
 
 
 class chromecast_control:
@@ -61,14 +62,33 @@ class chromecast_control:
         requests.post(self.build_youtube_url(), data=payload)
 
 
-if __name__ == "__main__":
+def main(argv):
+    logging.basicConfig(level=logging.INFO)
 
-    target_ip = '192.168.1.4'
+    parser = optparse.OptionParser('%prog [options] <server>')
+    parser.add_option('-y', '--youtube',
+                      help='Play YouTube clip with specified id (use "stop" to stop)')
+    parser.add_option('-s', '--status', default=False, action='store_true',
+                      help='Show current Chromecast status')
+    (options, args) = parser.parse_args(argv)
+
+    if len(args) != 1:
+        parser.error('need exactly one argument -- the server')
+
+    target_ip = args[0]
     app_id = 'app id from googs'
     a = chromecast_control(target_ip)
-    #a.start_app(app_id)
-    #a.start_app(app_id)
-    #a.start_youtube('awMIbA34MT8', 100)  # start the app on the target chromecast
-    #a.stop_youtube()
-    #print a.info() #get chromecast status
-    #a.stop() #stop the app on the chromecast
+
+    if options.youtube:
+        if options.youtube == 'stop':
+            a.stop_youtube()
+        else:
+            a.start_youtube(options.youtube, 100)
+
+    if options.status:
+        # get chromecast status
+        print a.info_app()
+
+
+if __name__ == "__main__":
+    main(sys.argv[1:])
